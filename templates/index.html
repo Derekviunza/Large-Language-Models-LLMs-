@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>RSC Africa Document Chatbot</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            margin: 0;
+            padding: 0;
+            color: #306480;
+        }
+        .container {
+            margin-top: 50px;
+        }
+        .navbar {
+            background-color: #306480;
+            color: white;
+        }
+        .navbar-brand {
+            color: white;
+        }
+        .btn-primary {
+            background-color: #306480;
+            border-color: #306480;
+        }
+        .header {
+            background-color: #306480;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .footer {
+            background-color: #306480;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+        .response-container {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .response-text {
+            font-size: 0.9em;
+            color: #306480;
+        }
+        .column {
+            flex: 1;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            margin: 10px;
+        }
+        .column.references {
+            flex: 0.4;
+        }
+        .column h2 {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            color: #306480;
+        }
+        .column p {
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            color: #306480;
+        }
+        .column .reference {
+            font-size: 0.9em;
+            color: #000000;
+            font-style: italic;
+        }
+        .image-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .image-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <a class="navbar-brand" href="#">RAG Query Interface</a>
+    </nav>
+    <div class="header">
+        <h1>RAG Query Interface</h1>
+    </div>
+    <div class="container">
+        <form method="post" class="mt-4">
+            <div class="form-group">
+                <label for="query_text">Enter your query:</label>
+                <input type="text" id="query_text" name="query_text" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+        <div class="response-container mt-4">
+            <div class="column">
+                <h2>Paraphrased Answer</h2>
+                <div class="response-text">{{ paraphrased_response }}</div>
+            </div>
+            <div class="column references">
+                <h2>References</h2>
+                <div class="response-text">
+                    {% for context in exact_response.split('\n\n---\n\n') %}
+                        <p>{{ context.split(' - ') }}</p>
+                        <p class="reference">{{ context.split(' - ') }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="image-container">
+            <img src="https://via.placeholder.com/800x400.png?text=RSC+Africa" alt="RSC Africa">
+        </div>
+    </div>
+    <div class="footer">
+        <p>© 2024 RSC Africa. All rights reserved.</p>
+    </div>
+</body>
+</html>
