@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, redirect, url_for
 from langchain_community.vectorstores import Chroma
 from langchain.prompts import ChatPromptTemplate
 from langchain_community.llms.ollama import Ollama
@@ -25,27 +25,41 @@ def query_rag(query_text: str):
         results = db.similarity_search_with_score(query_text, k=5)
         context_text = "\n\n---\n\n".join([f"{doc.page_content} - {doc.metadata.get('id', 'Unknown')}" for doc, _score in results])
         
-        # Paraphrased response
         prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
-        paraphrased_prompt = prompt_template.format(context=context_text, question=query_text)
-        model = Ollama(model="mistral")
-        paraphrased_response = model.invoke(paraphrased_prompt)
+        formatted_prompt = prompt_template.format(context=context_text, question=query_text)
+        model = Ollama(model="llama3.1")
+        response = model.invoke(formatted_prompt)
         
         sources = [doc.metadata.get("id", None) for doc, _score in results]
-        formatted_paraphrased_response = f"{paraphrased_response}\n\n<i>Sources: {', '.join(sources)}</i>"
+        formatted_response = f"{response}\n\n<i>Sources: {', '.join(sources)}</i>"
         
-        return formatted_paraphrased_response, context_text
+        return formatted_response, context_text
     except Exception as e:
         return f"An error occurred: {e}", ""
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    paraphrased_response = ""
-    exact_response = ""
+    response = ""
+    context_text = ""
+    query_text = ""
     if request.method == 'POST':
         query_text = request.form['query_text']
-        paraphrased_response, exact_response = query_rag(query_text)
-    return render_template('index.html', paraphrased_response=paraphrased_response, exact_response=exact_response)
+        response, context_text = query_rag(query_text)
+    return render_template('index.html', response=response, context_text=context_text, query_text=query_text)
+
+@app.route('/query/<query_text>')
+def query(query_text):
+    response, context_text = query_rag(query_text)
+    return render_template('index.html', response=response, context_text=context_text, query_text=query_text)
+
+@app.route('/news')
+def news():
+    # Sample news items and questions
+    news_items = [
+        {"title": "Cultural Orientation Guide Added", "description": "We've added the cultural orientation guide; feel free to ask me anything about cultural orientation.", "query": "What is cultural orientation?"},
+        {"title": "Eligibility Criteria Updated", "description": "What is cultural orientation eligibility? (based on the most searches by the users)", "query": "What is cultural orientation eligibility?"}
+    ]
+    return render_template('news.html', news_items=news_items)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=8080)

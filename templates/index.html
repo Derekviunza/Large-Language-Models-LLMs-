@@ -5,7 +5,7 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             background-color: #ffffff;
             margin: 0;
             padding: 0;
@@ -45,22 +45,18 @@
             padding: 20px;
             background-color: #ffffff;
             border-radius: 5px;
-            display: flex;
-            justify-content: space-between;
+            display: none; /* Hide initially */
+            flex-direction: column;
         }
         .response-text {
-            font-size: 0.9em;
+            font-size: 1em;
             color: #306480;
         }
         .column {
-            flex: 1;
             padding: 10px;
             background-color: #f8f9fa;
             border-radius: 5px;
-            margin: 10px;
-        }
-        .column.references {
-            flex: 0.4;
+            margin: 10px 0;
         }
         .column h2 {
             font-size: 1.2em;
@@ -68,12 +64,12 @@
             color: #306480;
         }
         .column p {
-            font-size: 0.9em;
+            font-size: 1em;
             margin-bottom: 10px;
             color: #306480;
         }
         .column .reference {
-            font-size: 0.9em;
+            font-size: 1em;
             color: #000000;
             font-style: italic;
         }
@@ -86,7 +82,30 @@
             height: auto;
             border-radius: 5px;
         }
+        .news-container {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            font-size: 0.9em; /* Smaller font size */
+        }
+        .news-item {
+            margin-bottom: 10px;
+        }
+        .news-item a {
+            color: #306480;
+            text-decoration: none;
+        }
+        .news-item a:hover {
+            text-decoration: underline;
+        }
     </style>
+    <script>
+        function showResponse() {
+            document.querySelector('.response-container').style.display = 'flex';
+            document.querySelector('.news-container').style.display = 'none';
+        }
+    </script>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark">
@@ -96,34 +115,52 @@
         <h1>RAG Query Interface</h1>
     </div>
     <div class="container">
-        <form method="post" class="mt-4">
+        <form method="post" class="mt-4" onsubmit="showResponse()">
             <div class="form-group">
                 <label for="query_text">Enter your query:</label>
                 <input type="text" id="query_text" name="query_text" class="form-control" required>
             </div>
             <button type="submit" class="btn btn-primary">Submit</button>
         </form>
+        <div class="news-container">
+            <h2>What's New</h2>
+            {% for item in news_items %}
+                <div class="news-item">
+                    <p>{{ item.description }}</p>
+                    <a href="{{ url_for('query', query_text=item.query) }}" class="btn btn-link">{{ item.query }}</a>
+                </div>
+            {% endfor %}
+        </div>
         <div class="response-container mt-4">
             <div class="column">
-                <h2>Paraphrased Answer</h2>
-                <div class="response-text">{{ paraphrased_response }}</div>
+                <h2>Question Asked</h2>
+                <div class="response-text">{{ query_text }}</div>
             </div>
-            <div class="column references">
+            <div class="column">
+                <h2>Response</h2>
+                <div class="response-text">{{ response }}</div>
+            </div>
+            <div class="column">
                 <h2>References</h2>
                 <div class="response-text">
-                    {% for context in exact_response.split('\n\n---\n\n') %}
-                        <p>{{ context.split(' - ') }}</p>
-                        <p class="reference">{{ context.split(' - ') }}</p>
+                    {% for context in context_text.split('\n\n---\n\n') %}
+                        <p>{{ context.split(' - ')[0] }}</p>
+                        <p class="reference">{{ context.split(' - ')[1] }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="column">
+                <h2>Exact Excerpts</h2>
+                <div class="response-text">
+                    {% for context in context_text.split('\n\n---\n\n') %}
+                        <p>{{ context.split(' - ')[0] }}</p>
                     {% endfor %}
                 </div>
             </div>
         </div>
-        <div class="image-container">
-            <img src="https://via.placeholder.com/800x400.png?text=RSC+Africa" alt="RSC Africa">
-        </div>
     </div>
     <div class="footer">
-        <p>© 2024 RSC Africa. All rights reserved.</p>
+        <p>© 2024 RSC Africa Document Chatbot</p>
     </div>
 </body>
 </html>
